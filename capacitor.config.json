@@ -1,0 +1,8 @@
+{
+  "appId": "com.ava91.arabic8",
+  "appName": "عربی ۸",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  }
+}
