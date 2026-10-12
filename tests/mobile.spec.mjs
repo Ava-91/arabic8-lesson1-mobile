@@ -59,6 +59,25 @@ test("responsive layouts do not create horizontal overflow", async ({ page }) =>
   }
 });
 
+test("whole-book exam includes questions from every completed lesson", async ({ page }) => {
+  await page.goto("/#home");
+  await page.evaluate(() => {
+    const lessons = {};
+    for (let id = 2; id <= 6; id++) {
+      lessons[id] = { correct: 4, total: 5, percent: 80, attempts: 1, completed: true };
+    }
+    localStorage.setItem("arabic8-curriculum-progress-v1", JSON.stringify({ lessons, bookExams: [] }));
+  });
+  await page.reload();
+  await page.goto("/#book-exam");
+  await page.locator('[data-a="book-exam-start"]').click();
+  await expect(page.locator(".exam-nav button")).toHaveCount(20);
+  const coveredTopics = await page.locator(".exam-nav button").evaluateAll(buttons =>
+    [...new Set(buttons.map(button => button.dataset.topic))]
+  );
+  expect(coveredTopics.length).toBeGreaterThanOrEqual(5);
+});
+
 test("accessibility basics and keyboard focus", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 800 });
   await page.goto("/#home");
