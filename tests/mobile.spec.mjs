@@ -102,6 +102,7 @@ test("mistake review renders questions saved in local progress", async ({ page }
     };
     localStorage.setItem("arabic8-lesson1-progress-v4", JSON.stringify(progress));
   }, questionId);
+  await page.reload();
   await page.goto("/#mistakes");
   await expect(page.locator(".review-item").first()).toBeVisible();
   await page.locator('button[data-a="mistake-quiz"]').click();
