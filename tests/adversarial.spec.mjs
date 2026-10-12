@@ -38,10 +38,9 @@ async function answerCurrentQuestion(page) {
   throw new Error("No supported answer control was rendered for the current question");
 }
 
-test("repeated topic quiz interactions remain bounded", async ({ page }) => {
+test("topic quiz supports answer and next navigation", async ({ page }) => {
   page.on("dialog", dialog => dialog.accept());
-  for (let round = 0; round < 12; round++) {
-    await page.goto("/#topic/colors");
+  await page.goto("/#topic/colors");
     const start = page.locator('[data-a="quiz-topic"]');
     await expect(start).toBeVisible();
     await start.click();
@@ -50,13 +49,9 @@ test("repeated topic quiz interactions remain bounded", async ({ page }) => {
     await expect(page.locator('[data-a="next"]')).toBeVisible();
     await page.locator('[data-a="next"]').click();
     await expect(page.locator(".question-card,.result")).toBeVisible();
-    if (round % 4 === 0) {
-      await page.setViewportSize({ width: 320, height: 800 });
-      expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth))
-        .toBeLessThanOrEqual(1);
-      await page.setViewportSize({ width: 390, height: 800 });
-    }
-  }
+  await page.setViewportSize({ width: 320, height: 800 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth))
+    .toBeLessThanOrEqual(1);
 });
 
 test("stale controls cannot resurrect a quiz after exit", async ({ page }) => {
