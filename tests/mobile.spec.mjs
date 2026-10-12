@@ -199,3 +199,26 @@ test("service worker shell cache contains the app entry point", async ({ page })
   expect(result.ready).toBeTruthy();
   expect(result.indexCached).toBeTruthy();
 });
+
+test("vocabulary flashcards reveal, save known words, and expose whole-book progress", async ({ page }) => {
+  await page.goto("/#flashcards");
+  await expect(page.locator(".flashcard-face")).toBeVisible();
+  await expect(page.locator(".flashcard-face")).toContainText("برای دیدن معنی لمس کن");
+  await page.locator('[data-a="flash-reveal"]').click();
+  await expect(page.locator(".flashcard-face")).not.toContainText("برای دیدن معنی لمس کن");
+  await page.locator('[data-a="flash-known"]').click();
+  await expect(page.locator(".flashcard-stats")).toContainText("1");
+  await page.reload();
+  await expect(page.locator(".flashcard-stats")).toContainText("1");
+  await page.goto("/#progress");
+  await expect(page.locator(".curriculum-progress-panel")).toBeVisible();
+  await expect(page.locator(".curriculum-progress-row")).toHaveCount(10);
+});
+
+test("home has a useful resume action, quick tools, and incorrect-answer review", async ({ page }) => {
+  await page.goto("/#home");
+  await expect(page.locator(".home-quick-grid")).toBeVisible();
+  await expect(page.locator('[data-a="lesson"]').first()).toBeVisible();
+  await page.locator('[data-a="go"][data-r="flashcards"]').first().click();
+  await expect(page.locator(".flashcards-page")).toBeVisible();
+});
