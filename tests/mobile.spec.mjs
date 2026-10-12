@@ -37,8 +37,7 @@ test("lesson progress is stored separately and whole-book exam draws from comple
   await page.locator('[data-a="book-exam-start"]').click();
   await expect(page.locator(".question-card")).toBeVisible();
   await expect(page.locator(".exam-nav button")).toHaveCount(10);
-  const lessonLabels = await page.locator(".exam-nav").evaluate(el => el.parentElement.innerText);
-  expect(lessonLabels).toContain("آزمون کل کتاب");
+  await expect(page.locator(".question-meta")).toContainText("آزمون کل کتاب");
 });
 
 test("responsive layouts do not create horizontal overflow", async ({ page }) => {
