@@ -184,8 +184,3 @@ cd android && ./gradlew assembleDebug
 ```
 
 The Android project is generated during builds to keep generated files out of source control. The preferred Google Fonts still download from Google, so airplane-mode font availability is not guaranteed yet. Learning progress is stored locally on each device and is not synchronized.
-
-
-## Repository separation
-
-The website source in this repository is copied from [`Ava-91/arabic8-lesson1`](https://github.com/Ava-91/arabic8-lesson1). Changes made here do not publish to the original GitHub Pages site. Keep mobile-specific configuration and workflow fixes in this repository.
