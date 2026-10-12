@@ -20,6 +20,10 @@ test("textbook catalogue exposes ten ordered lessons with page references", asyn
   await expect(page.locator(".curriculum-lesson")).toBeVisible();
   await expect(page.locator(".guide-card")).toHaveCount(3);
   await expect(page.locator(".word-grid .word")).toHaveCount(6);
+  await expect(page.locator(".word-grid .word").first()).toHaveAttribute("aria-expanded", "false");
+  await page.locator(".word-grid .word").first().click();
+  await expect(page.locator(".word-grid .word").first()).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator(".word-grid .word").first()).not.toContainText("برای دیدن معنی لمس کن");
   await expect(page.locator('[data-a="lesson-quiz"]')).toBeVisible();
 });
 
