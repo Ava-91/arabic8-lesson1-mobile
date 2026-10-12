@@ -1,0 +1,193 @@
+name: Bootstrap mobile copy and build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap-and-build:
+    if: contains(github.event.head_commit.message, '[bootstrap-mobile]') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out mobile repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Copy the complete website source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/Ava-91/arabic8-lesson1.git /tmp/arabic8-source
+          rsync -a --exclude='.git' --exclude='.github/workflows/pages.yml' /tmp/arabic8-source/ ./
+          mkdir -p .github/workflows scripts
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const p = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          p.name = 'arabic8-lesson1-mobile';
+          p.scripts = { ...p.scripts, 'mobile:prepare': 'node scripts/prepare-mobile.mjs' };
+          p.dependencies = { ...(p.dependencies || {}), '@capacitor/android': '^7.0.0', '@capacitor/cli': '^7.0.0', '@capacitor/core': '^7.0.0' };
+          fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');
+          NODE
+          cat > capacitor.config.ts <<'EOF'
+          import type { CapacitorConfig } from '@capacitor/cli';
+
+          const config: CapacitorConfig = {
+            appId: 'com.ava91.arabic8',
+            appName: 'عربی ۸',
+            webDir: 'www',
+            bundledWebRuntime: false,
+            android: { allowMixedContent: false },
+          };
+
+          export default config;
+          EOF
+          cat > scripts/prepare-mobile.mjs <<'EOF'
+          import { cp, mkdir, rm } from 'node:fs/promises';
+
+          const root = new URL('../', import.meta.url);
+          const output = new URL('../www/', import.meta.url);
+          await rm(output, { recursive: true, force: true });
+          await mkdir(output, { recursive: true });
+          for (const item of ['index.html', '404.html', 'manifest.webmanifest', 'sw.js']) {
+            await cp(new URL(item, root), new URL(item, output));
+          }
+          for (const item of ['css', 'js', 'assets', 'icons']) {
+            await cp(new URL(item, root), new URL(item, output), { recursive: true });
+          }
+          console.log('Prepared local website assets for Capacitor in ./www');
+          EOF
+          cat > .gitignore <<'EOF'
+          node_modules/
+          www/
+          android/
+          playwright-report/
+          test-results/
+          .DS_Store
+          EOF
+          cat >> README.md <<'EOF'
+
+          ## Android APK (this mobile repository)
+
+          This repository is a separate copy of the Arabic 8 website with a Capacitor Android build pipeline. The original GitHub Pages repository is not modified.
+
+          Every push to `main`, pull request targeting `main`, or manual run of **Actions → Android APK → Run workflow** validates the source, runs Playwright tests, packages the site locally, generates the Capacitor Android project, builds a debug APK, and uploads it as the `arabic8-android-debug-apk` artifact. Download it from the completed Actions run's Artifacts section. Debug APKs are for testing, not a Play Store release.
+
+          Local requirements: Node.js 22, Java 21, Android SDK/Android Studio.
+
+          ```sh
+          npm install
+          npm run check
+          npx playwright install chromium
+          npm run test:mobile
+          npm run mobile:prepare
+          npx cap add android
+          npx cap sync android
+          cd android && ./gradlew assembleDebug
+          ```
+
+          The Android project is generated during builds to keep generated files out of source control. The preferred Google Fonts still download from Google, so airplane-mode font availability is not guaranteed yet. Learning progress is stored locally on each device and is not synchronized.
+          EOF
+          cat > .github/workflows/android-apk.yml <<'EOF'
+          name: Android APK
+
+          on:
+            push:
+              branches: [main]
+            pull_request:
+              branches: [main]
+            workflow_dispatch:
+
+          permissions:
+            contents: read
+
+          concurrency:
+            group: android-apk-${{ github.ref }}
+            cancel-in-progress: true
+
+          jobs:
+            build-apk:
+              name: Validate and build Android APK
+              runs-on: ubuntu-latest
+              timeout-minutes: 35
+              steps:
+                - name: Check out repository
+                  uses: actions/checkout@v4
+                - name: Set up Node.js
+                  uses: actions/setup-node@v4
+                  with:
+                    node-version: 22
+                - name: Set up Java
+                  uses: actions/setup-java@v4
+                  with:
+                    distribution: temurin
+                    java-version: '21'
+                - name: Install Node dependencies
+                  run: npm install --no-audit --no-fund
+                - name: Validate lesson source
+                  run: npm run check
+                - name: Install Chromium for Playwright
+                  run: npx playwright install --with-deps chromium
+                - name: Run browser and mobile tests
+                  run: npm run test:mobile
+                - name: Prepare packaged website
+                  run: npm run mobile:prepare
+                - name: Generate Android project
+                  run: npx cap add android
+                - name: Sync Capacitor assets
+                  run: npx cap sync android
+                - name: Build debug APK
+                  working-directory: android
+                  run: ./gradlew --no-daemon assembleDebug
+                - name: Upload installable debug APK
+                  uses: actions/upload-artifact@v4
+                  with:
+                    name: arabic8-android-debug-apk
+                    path: android/app/build/outputs/apk/debug/app-debug.apk
+                    if-no-files-found: error
+                    retention-days: 14
+          EOF
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "feat: copy Arabic 8 website and configure Android APK build [bootstrap-mobile]"
+            git push origin HEAD:main
+          fi
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Node dependencies
+        run: npm install --no-audit --no-fund
+      - name: Validate lesson source
+        run: npm run check
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Run browser and mobile tests
+        run: npm run test:mobile
+      - name: Prepare packaged website
+        run: npm run mobile:prepare
+      - name: Generate Android project
+        run: npx cap add android
+      - name: Sync Capacitor assets
+        run: npx cap sync android
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew --no-daemon assembleDebug
+      - name: Upload installable debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: arabic8-android-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
