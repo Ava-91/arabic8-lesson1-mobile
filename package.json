@@ -1,0 +1,18 @@
+{
+  "name": "arabic8-lesson1-mobile",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node scripts/check.mjs",
+    "test:mobile": "playwright test",
+    "mobile:prepare": "node scripts/prepare-mobile.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.55.0"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/core": "^7.0.0"
+  }
+}

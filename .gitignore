@@ -1,0 +1,6 @@
+node_modules/
+www/
+android/
+playwright-report/
+test-results/
+.DS_Store
