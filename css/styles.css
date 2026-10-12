@@ -435,3 +435,8 @@ html[data-theme="dark"] .path-card.mastered .path-node{box-shadow:inset 0 0 0 1p
 .book-exam-promo p{color:var(--muted);line-height:1.9}
 .curriculum-lesson .word-grid{margin:12px 0 24px}
 @media(max-width:650px){.curriculum-grid{grid-template-columns:minmax(0,1fr);gap:12px}.curriculum-card{padding:16px}.curriculum-card h3{font-size:1rem}.book-exam-promo{padding:16px}}
+
+.vocab-card{width:100%;min-height:108px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px;text-align:center;color:inherit;font:inherit;cursor:pointer}
+.vocab-card .vocab-meaning{font-size:.85rem;color:var(--muted)}
+.vocab-card.revealed{border-color:var(--accent);background:var(--surface-alt)}
+.vocab-card.revealed .vocab-meaning{color:var(--text);font-weight:700}
