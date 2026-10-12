@@ -11,6 +11,40 @@ test("main routes render usable content", async ({ page }) => {
   await expect(page.locator(".home-heading")).toBeVisible();
 });
 
+test("textbook catalogue exposes ten ordered lessons with page references", async ({ page }) => {
+  await page.goto("/#learn");
+  await expect(page.locator(".curriculum-card")).toHaveCount(10);
+  await expect(page.locator(".curriculum-card").nth(0)).toContainText("۱۱–۲۲");
+  await expect(page.locator(".curriculum-card").nth(9)).toContainText("۱۲۷–۱۳۶");
+  await page.locator('[data-a="lesson"][data-id="2"]').click();
+  await expect(page.locator(".curriculum-lesson")).toBeVisible();
+  await expect(page.locator(".guide-card")).toHaveCount(3);
+  await expect(page.locator(".word-grid .word")).toHaveCount(6);
+  await expect(page.locator(".word-grid .word").first()).toHaveAttribute("aria-expanded", "false");
+  await page.locator(".word-grid .word").first().click();
+  await expect(page.locator(".word-grid .word").first()).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator(".word-grid .word").first()).not.toContainText("برای دیدن معنی لمس کن");
+  await expect(page.locator('[data-a="lesson-quiz"]')).toBeVisible();
+});
+
+test("lesson progress is stored separately and whole-book exam draws from completed lessons", async ({ page }) => {
+  await page.goto("/#learn");
+  await page.evaluate(() => localStorage.setItem("arabic8-curriculum-progress-v1", JSON.stringify({
+    lessons: {
+      2: { correct: 4, total: 5, percent: 80, attempts: 1, completed: true },
+      3: { correct: 5, total: 5, percent: 100, attempts: 1, completed: true }
+    },
+    bookExams: []
+  })));
+  await page.reload();
+  await page.goto("/#book-exam");
+  await expect(page.locator(".curriculum-card")).toHaveCount(2);
+  await page.locator('[data-a="book-exam-start"]').click();
+  await expect(page.locator(".question-card")).toBeVisible();
+  await expect(page.locator(".exam-nav button")).toHaveCount(10);
+  await expect(page.locator(".question-meta")).toContainText("آزمون کل کتاب");
+});
+
 test("responsive layouts do not create horizontal overflow", async ({ page }) => {
   for (const width of [320, 360, 390, 800]) {
     await page.setViewportSize({ width, height: width === 800 ? 390 : 800 });
@@ -23,6 +57,25 @@ test("responsive layouts do not create horizontal overflow", async ({ page }) =>
       ).toBeLessThanOrEqual(1);
     }
   }
+});
+
+test("whole-book exam includes questions from every completed lesson", async ({ page }) => {
+  await page.goto("/#home");
+  await page.evaluate(() => {
+    const lessons = {};
+    for (let id = 2; id <= 6; id++) {
+      lessons[id] = { correct: 4, total: 5, percent: 80, attempts: 1, completed: true };
+    }
+    localStorage.setItem("arabic8-curriculum-progress-v1", JSON.stringify({ lessons, bookExams: [] }));
+  });
+  await page.reload();
+  await page.goto("/#book-exam");
+  await page.locator('[data-a="book-exam-start"]').click();
+  await expect(page.locator(".exam-nav button")).toHaveCount(20);
+  const coveredTopics = await page.locator(".exam-nav button").evaluateAll(buttons =>
+    [...new Set(buttons.map(button => button.dataset.topic))]
+  );
+  expect(coveredTopics.length).toBeGreaterThanOrEqual(5);
 });
 
 test("accessibility basics and keyboard focus", async ({ page }) => {

@@ -1,4 +1,4 @@
-const CACHE = "arabic8-lesson1-shell-v11";
+const CACHE = "arabic8-lesson1-shell-v12";
 const ASSETS = [
   "./assets/lesson1/window.svg",
   "./assets/lesson1/shirt-pants.jpg",
@@ -12,14 +12,15 @@ const ASSETS = [
   "./manifest.webmanifest",
   "./icons/icon-192.svg",
   "./icons/icon-512.svg",
-  "./css/styles.css?v=30",
-  "./js/app.js?v=28",
+  "./css/styles.css?v=31",
+  "./js/app.js?v=29",
   "./js/storage.js",
   "./js/utils.js",
   "./js/data.js",
   "./js/data/topics.js",
   "./js/data/questions.js",
-  "./js/data/lesson.js"
+  "./js/data/lesson.js",
+  "./js/data/curriculum.js"
 ];
 
 self.addEventListener("install", event => {
