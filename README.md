@@ -61,7 +61,8 @@ arabic8-lesson1/
 │   └── data/
 │       ├── topics.js
 │       ├── lesson.js
-│       └── questions.js
+│       ├── questions.js
+│       └── curriculum.js
 ├── assets/
 │   └── lesson1/
 ├── docs/
