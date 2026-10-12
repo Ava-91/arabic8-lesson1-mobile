@@ -32,6 +32,7 @@ test("lesson progress is stored separately and whole-book exam draws from comple
     },
     bookExams: []
   })));
+  await page.reload();
   await page.goto("/#book-exam");
   await expect(page.locator(".curriculum-card")).toHaveCount(2);
   await page.locator('[data-a="book-exam-start"]').click();
