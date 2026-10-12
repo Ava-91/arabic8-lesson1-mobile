@@ -215,6 +215,15 @@ test("vocabulary flashcards reveal, save known words, and expose whole-book prog
   await expect(page.locator(".curriculum-progress-row")).toHaveCount(10);
 });
 
+test("lesson completion can be marked manually and appears in progress", async ({ page }) => {
+  await page.goto("/#lesson/4");
+  await page.locator('[data-a="complete-lesson"]').click();
+  await expect(page.locator('[data-a="complete-lesson"]')).toContainText("درس تکمیل شده");
+  await page.goto("/#progress");
+  const row = page.locator('.curriculum-progress-row').filter({ hasText: "تجربهٔ جدید" });
+  await expect(row).toContainText("100٪");
+});
+
 test("home has a useful resume action, quick tools, and incorrect-answer review", async ({ page }) => {
   await page.goto("/#home");
   await expect(page.locator(".home-quick-grid")).toBeVisible();
