@@ -4,10 +4,10 @@ import{lesson}from"./data/lesson.js";
 import{questions}from"./data/questions.js";
 import{topicName,pct,shuffle,esc,ar,todayKey}from"./utils.js";
 import{loadProgress,saveProgress,resetProgress,recordAnswer,completeDailyGoal,recordTopicCompletion,markAchievement}from"./storage.js";
+const CURRICULUM_KEY="arabic8-curriculum-progress-v1";
 let state={progress:loadProgress(),curriculumProgress:loadCurriculumProgress(),quiz:null,match:null,order:[],wordbank:[]};
 const app=document.querySelector("#app");
 const THEME_KEY="arabic8-theme";
-const CURRICULUM_KEY="arabic8-curriculum-progress-v1";
 function loadCurriculumProgress(){try{const p=JSON.parse(localStorage.getItem(CURRICULUM_KEY)||"{}");return{lessons:p.lessons&&typeof p.lessons==="object"?p.lessons:{},bookExams:Array.isArray(p.bookExams)?p.bookExams:[]}}catch{return{lessons:{},bookExams:[]}}}
 function saveCurriculumProgress(){try{localStorage.setItem(CURRICULUM_KEY,JSON.stringify(state.curriculumProgress));return true}catch{return false}}
 function lessonStatus(id){if(id===1){const p=state.progress;return Boolean(p.diagnostic||p.completedTopics.length>=3||p.examAttempts.some(x=>x.total&&x.correct/x.total>=.7))}return Boolean(state.curriculumProgress.lessons[id]?.completed)}
