@@ -11,7 +11,7 @@
     "@playwright/test": "1.55.0"
   },
   "dependencies": {
-    "@capacitor/android": "^7.0.0",
+    "@capacitor/android": "^8.6.0",
     "@capacitor/cli": "^7.0.0",
     "@capacitor/core": "^7.0.0"
   }
