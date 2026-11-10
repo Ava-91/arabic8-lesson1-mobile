@@ -8,7 +8,7 @@
     "mobile:prepare": "node scripts/prepare-mobile.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "1.55.0"
+    "@playwright/test": "1.65.0"
   },
   "dependencies": {
     "@capacitor/android": "^7.0.0",
